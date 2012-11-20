@@ -1,10 +1,20 @@
 
-This tool was writed by ruby, require watir gem, so you must install ruby and watir gem before run it.
+This tool was writed by ruby, require watir gem, so you must install ruby and watir/watir-webdriver gems before run it.
 Also make sure the bin path of ruby is added to environment variable PATH.
-How to install watir: open command line and execute command "gem install watir"
+make sure Tcl/Tk support is checked when install ruby in your computer.
+How to install watir: open command line and execute command
+"gem install watir"
+"gem install watir-webdriver"
 
-For GUI version: run gui_start.bat(make sure Tcl/Tk support is checked when install ruby in your computer. if not please run console_start.bat instead.)
-For console version: run console_start.bat
+usage:
+all start here: start.bat.
+
+version 1.4
+1 can export bugs from JIRA now, labruns hyperlink is inserted into the bug excel automatically for every bug(chrome only)
+2 optimize module count code
+3 disable export bug result as txt type function
+4 not support console model any more, if some one in favor of it, please go back to version 1.3
+5 add application icon, if the path contains GBK encoded string, use default TK icon instead
 
 version 1.3
 1 can view the result from IE now

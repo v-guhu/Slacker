@@ -9,16 +9,20 @@ module Count
   URL_PREFIX_SINGLE_UPCASE = 'http://tfx/LabrunManager/LabRunReport.aspx?labrunId='
 
   class CountBugs
-    attr_reader :browser
-    attr_accessor :labrun_ids
-    attr_reader :bugs
-    attr_accessor :unfinished_labruns
+    attr_reader     :browser
+    attr_accessor   :labrun_ids
+    attr_reader     :bugs
+    attr_reader     :total_bugs
+    attr_reader     :bug_labrun
+    attr_accessor   :unfinished_labruns
 
-    def initialize
-      e                   = Integration::Environment.new
+    def initialize e_browser
+      e                   = Integration::Environment.new e_browser
       @browser            = e.browser
       @labrun_ids         = Array.new
       @bugs               = Hash.new
+      @total_bugs         = Array.new
+      @bug_labrun         = Hash.new
       @unfinished_labruns = Array.new
     end
 
@@ -114,6 +118,32 @@ module Count
         end
       end
       browser.close
+      get_total_bug
+      get_bug_labrun
+    end
+
+    def get_total_bug
+      # 统计出所有的bug，放入total_bug中
+      bugs.each_value do |e|
+        total_bugs << e
+      end
+      if total_bugs.size != 0
+        total_bugs.flatten!
+        total_bugs.uniq!
+      end
+    end
+
+    def get_bug_labrun
+      # 以bug号作为key，有此bug的所有LabrunID组成的数组作为value
+      total_bugs.each() do |b|
+        ta = Array.new
+        bugs.each_pair do |k,v|
+          if v.find_index(b)
+            ta << k
+          end
+        end
+        bug_labrun[b] = ta
+      end
     end
 
     def write_bugs_to_file file_name
@@ -126,6 +156,19 @@ module Count
         file.puts sort_bugs_by 'hawaii'
         file.puts get_unfinished_labrun_url
         $stdout.puts "Finished write bugs to file #{file_name}"
+      end
+    end
+
+    def write_bugs_as_yml file_name
+      $stdout.puts "Writing bugs into yml file #{file_name}..."
+      File.open(file_name, "w") do |file|
+        file.puts 'totalbugs: [' + total_bugs.join(',') + ']'
+        file.puts
+        file.puts "labrunsortedbybug:"
+        bug_labrun.each_pair do |k, v|
+          file.puts '  ' + k.to_s + ': [' + v.join(',') + ']'
+        end
+        $stdout.puts "Finished write bugs into yml file #{file_name}"
       end
     end
 
@@ -154,17 +197,6 @@ module Count
     end
 
     def construct_total_bug_table
-      # 统计出所有的bug，放入total_bugs中
-      total_bugs = Array.new
-      bugs.each_value do |e|
-        total_bugs << e
-      end
-
-      if total_bugs.size != 0
-        total_bugs.flatten!
-        total_bugs.uniq!
-      end
-
       # 以字符串的形式返回结果
       s = '
 <h4>Total Bugs: </h4>
@@ -181,17 +213,6 @@ module Count
     end
 
     def construct_sorted_by_bug_table
-      # 统计出所有的bug，放入total_bugs中
-      total_bugs = Array.new
-      bugs.each_value do |e|
-        total_bugs << e
-      end
-
-      if total_bugs.size != 0
-        total_bugs.flatten!
-        total_bugs.uniq!
-      end
-
       # 以bug号作为key，有此bug的所有LabrunID组成的数组作为value
       result_hash = Hash.new
       total_bugs.each() do |b|
@@ -217,13 +238,6 @@ module Count
     <tr>
         <td><a href="https://jira/jira/browse/'+k.to_s+'">'+k.to_s+'</a> </td>'+"\n"+'        <td><a href="'+URL_PREFIX_MULTIPLE+s.chop+'">'+s.chop+'</a></td>
     </tr>')
-        #if k =~ /QM-/
-        #  result.concat(" "*2 + k.to_s + " "*12 + URL_PREFIX_MULTIPLE + s.chop + "\n")
-        #elsif k=~ /INC/
-        #  result.concat(" "*2 + k.to_s + " "*4 + URL_PREFIX_MULTIPLE + s.chop + "\n")
-        #else
-        #  result.concat(" "*2 + k.to_s + " "*9 + URL_PREFIX_MULTIPLE + s.chop + "\n")
-        #end
       end
       $stdout.puts result_hash
       result.concat('
@@ -255,17 +269,6 @@ module Count
     end
 
     def construct_jira_bug_table
-      # 统计出所有的bug，放入total_bugs中
-      total_bugs = Array.new
-      bugs.each_value do |e|
-        total_bugs << e
-      end
-
-      if total_bugs.size != 0
-        total_bugs.flatten!
-        total_bugs.uniq!
-      end
-
       # 以字符串的形式返回结果
       result = '
 <h4>Total Bugs In Jira:</h4>
@@ -287,17 +290,6 @@ module Count
     end
 
     def construct_hawaii_bug_table
-      # 统计出所有的bug，放入total_bugs中
-      total_bugs = Array.new
-      bugs.each_value do |e|
-        total_bugs << e
-      end
-
-      if total_bugs.size != 0
-        total_bugs.flatten!
-        total_bugs.uniq!
-      end
-
       # 以字符串的形式返回结果
       result = '
 <h4>Total Bugs In Hawaii:</h4>
@@ -332,7 +324,6 @@ module Count
     end
 
     def sort_bugs_by type
-      # bugs = {"975398" => ["MAIN-65922","MAIN-62701"],"917801" => ["MAIN-62701"],"917798" => ["INC000000193570"],"915630" => ["MAIN-65295","QM-5410","QM-5392"] }
       result = ""
       case type
         when "labrun"
@@ -349,59 +340,24 @@ module Count
           $stdout.puts bugs
           return result
         when "bug"
-          # 统计出所有的bug，放入total_bugs中
-          total_bugs = Array.new
-          bugs.each_value do |e|
-            total_bugs << e
-          end
-
-          if total_bugs.size != 0
-            total_bugs.flatten!
-            total_bugs.uniq!
-          end
-
-          # 以bug号作为key，有此bug的所有LabrunID组成的数组作为value
-          result_hash = Hash.new
-          total_bugs.each() do |b|
-            ta = Array.new
-            bugs.each_pair do |k,v|
-              if v.find_index(b)
-                ta << k
-              end
-            end
-            result_hash[b] = ta
-          end
-
           # 以字符串的形式返回结果
           result.concat("\n\n  Labrun List Sorted By Bug: \n  Bugs               LabrunID\n" + "*"*42 + "\n")
-          result_hash.each_pair do |k, v|
+          bug_labrun.each_pair do |k, v|
             s = ''
             v.each do |e|
               s.concat(e.to_s + ',')
             end
             if k =~ /QM-/
-              result.concat(" "*2 + k.to_s + " "*12 + URL_PREFIX_MULTIPLE + s.chop + "\n")
+              result.concat(" "*2 + k.to_s + " "*12 + s.chop + "\n")
             elsif k=~ /INC/
-              result.concat(" "*2 + k.to_s + " "*4 + URL_PREFIX_MULTIPLE + s.chop + "\n")
+              result.concat(" "*2 + k.to_s + " "*4 + s.chop + "\n")
             else
-              result.concat(" "*2 + k.to_s + " "*9 + URL_PREFIX_MULTIPLE + s.chop + "\n")
+              result.concat(" "*2 + k.to_s + " "*9 + s.chop + "\n")
             end
           end
-          $stdout.puts result_hash
-           p result
+          $stdout.puts bug_labrun
           return result
         when "jira"
-          # 统计出所有的bug，放入total_bugs中
-          total_bugs = Array.new
-          bugs.each_value do |e|
-            total_bugs << e
-          end
-
-          if total_bugs.size != 0
-            total_bugs.flatten!
-            total_bugs.uniq!
-          end
-
           # 以字符串的形式返回结果
           result.concat("\n\n  Total Bugs In Jira: \n" + "*"*42 + "\n")
           s = ''
@@ -414,17 +370,6 @@ module Count
           end
           return result.concat(" "*2 + s.chop)
         when "hawaii"
-          # 统计出所有的bug，放入total_bugs中
-          total_bugs = Array.new
-          bugs.each_value do |e|
-            total_bugs << e
-          end
-
-          if total_bugs.size != 0
-            total_bugs.flatten!
-            total_bugs.uniq!
-          end
-
           # 以字符串的形式返回结果
           result.concat("\n\n  Total Bugs In Hawaii: \n" + "*"*42 + "\n")
           s = ''
@@ -437,17 +382,6 @@ module Count
           end
           return result.concat(" "*2 + s.chop)
         when "default"
-          # 统计出所有的bug，放入total_bugs中
-          total_bugs = Array.new
-          bugs.each_value do |e|
-            total_bugs << e
-          end
-
-          if total_bugs.size != 0
-            total_bugs.flatten!
-            total_bugs.uniq!
-          end
-
           # 以字符串的形式返回结果
           result.concat("  Total Bugs: \n" + "*"*42 + "\n")
           s = ''

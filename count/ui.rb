@@ -11,14 +11,16 @@ module BaseUI
   OUTPUT_PATH     =  '..\\files\\output.txt'
   HTML_PATH       =  '..\\files\\bug_result.html'
   NOLABRUN_INFO   =  '请输入需要统计的labrun数据。'
-  OPEN_FILE_INFO  =  '您还没有开始此次bug的统计。
-是否打开上一次的统计结果？'
+  OPEN_FILE_INFO0 =  '您还没有开始此次bug的统计。
+  是否打开上一次的结果？'
+  OPEN_FILE_INFO1 =  '您还没有开始此次bug的统计。
+是否导出上一次的bug的excel结果？'
   OPEN_ANLYSIS_INFO  =  '您还没有开始此次labrun的分析。
   是否打开上一次的分析结果？'
 
   INFO            = '
    Bug 统计小工具
-     version 1.0
+     version 1.4
 copyright@Phiso Hu'
   HELP            =  '统计bug有两种输入数据的方式：
 1 手动输入： 点击‘手动输入’按钮即可在下面橘色的输入区输入你要统计的Labrun的URL。
@@ -48,7 +50,9 @@ copyright@Phiso Hu'
         maxsize(650,500)
         geometry('650x500')
         resizable(0,0)
-        #iconbitmap "crw.ico"
+        if Dir.pwd.to_s.encoding.to_s != 'GBK'
+           iconbitmap "#{Dir.pwd}/icon/crw.ico"
+        end
       end
       return root
     end
@@ -141,8 +145,8 @@ copyright@Phiso Hu'
         pack('padx' => '10', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
       end
 
-      output_to_file_button = TkButton.new(root) do
-        text  '文本结果'
+      output_to_excel_button = TkButton.new(root) do
+        text  '表格导出'
         height 1
         font G_FONT
         pack('padx' => '15', 'pady' => '5', 'side' => 'right', 'in' => buttons_frame)
@@ -244,16 +248,31 @@ copyright@Phiso Hu'
 
             $threads["anlysis thread"] = Thread.new() do
               Thread.current[:name] = "anlysis thread"
+              output_text.clear
+              output_text.insert('end', "
+
+I'm doing anlysis...
+
+After anlysis finished, please click '分析结果' button to view the result.")
               anlysis_thread = system('ruby.exe anlysis_start.rb')
               if anlysis_thread
+                output_text.clear
                 $stdout.puts "finished labrun anlysis, all work well."
+                output_text.insert('end', "
+
+Finished labrun anlysis, all work well.
+
+Please click '分析结果' button to view the result.")
+                              #anlysis_thread = system('ruby.exe anlysis_start.rb')
               else
+                output_text.clear
                 $stderr.puts "an error occurred when anlysis labruns."
+                output_text.insert('end', "
+
+Sorry, an error occurred when anlysis labruns.
+
+Please try again")
               end
-
-              # 统计完毕将结果读出到UI界面
-              output_text.insert('end', 'Labrun anlysis finished, please click anlysis result button to view.')
-
               # 设置输出区状态
               output_text.configure('state' => 'disabled')
               Thread.kill(Thread.current)
@@ -276,14 +295,16 @@ copyright@Phiso Hu'
         else
           if output_text.background == 'orange'
             $threads["open anlysis result thread"] = Thread.new do
-              system('open_anlysis_result_html.bat')
+              system("open_anlysis_result_html.bat")
+              #system('ruby.exe open_anlysis_result.rb')
               Thread.kill(Thread.current)
             end
           else
             r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_ANLYSIS_INFO)
             if r == 'yes'
               $threads["open anlysis result thread"] = Thread.new do
-                system('open_anlysis_result_html.bat')
+                system("open_anlysis_result_html.bat")
+                #system('ruby.exe open_anlysis_result.rb')
                 Thread.kill(Thread.current)
               end
             end
@@ -319,11 +340,32 @@ copyright@Phiso Hu'
 
             $threads["count thread"] = Thread.new() do
               Thread.current[:name] = "count thread"
+              output_text.insert('end', "
+
+I'm counting bugs...
+
+After finish please click 'html结果' to view result as html file, or click '表格导出' to export bugs from JIRA as excel file.")
               count_thread = system('ruby.exe count_start.rb')
               if count_thread
-                $stdout.puts "finished bug count, all work well."
+                $stdout.puts "Finished bug count, all work well."
+                output_text.clear
+                output_text.insert('end', "
+
+Finished bug count, all work well.
+
+Please click 'html结果' to view result as html file, or click '表格导出' to export bugs from JIRA as excel file.
+The Labrun hyperlink(s) also have been added to excel for every bug.
+
+")
               else
-                $stderr.puts "an error occurred when count bugs."
+                $stderr.puts "An error occurred when count bugs."
+                output_text.clear
+                output_text.insert('end', "
+Sorry, an error occurred when count bugs.
+
+Please try again.
+
+")
               end
 
               # 统计完毕将结果读出到UI界面
@@ -340,7 +382,7 @@ copyright@Phiso Hu'
         end
       end
 
-      output_to_file_button.comman = Proc.new do
+      output_to_excel_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
@@ -352,14 +394,18 @@ copyright@Phiso Hu'
         else
           if output_text.background == 'orange'
             $threads["open result thread"] = Thread.new do
-              system("notepad.exe #{OUTPUT_PATH}")
+              # disable it for seldom use
+              # system("notepad.exe #{OUTPUT_PATH}")
+              system("ruby.exe export_excel_start.rb")
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO)
+            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO1)
             if r == 'yes'
               $threads["open result thread"] = Thread.new do
-                system("notepad.exe #{OUTPUT_PATH}")
+                # disable it for seldom use
+                # system("notepad.exe #{OUTPUT_PATH}")
+                system("ruby.exe export_excel_start.rb")
                 Thread.kill(Thread.current)
               end
             end
@@ -379,14 +425,16 @@ copyright@Phiso Hu'
         else
           if output_text.background == 'orange'
             $threads["open result thread"] = Thread.new do
-              system('open_bug_result_html.bat')
+              system("open_bug_result_html.bat")
+              #system('ruby.exe open_bug_result.rb')
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO)
+            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO0)
             if r == 'yes'
               $threads["open result thread"] = Thread.new do
-                system('open_bug_result_html.bat')
+                system("open_bug_result_html.bat")
+                #system('ruby.exe open_bug_result.rb')
                 Thread.kill(Thread.current)
               end
             end

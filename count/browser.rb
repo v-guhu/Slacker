@@ -1,3 +1,4 @@
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
 module Integration
 
@@ -23,7 +24,15 @@ module Integration
           @browser = Watir::Browser.new 'firefox'
         when 'CHROME', 'chrome'
           require 'watir-webdriver'
-          @browser = Watir::Browser.new 'chrome'
+          ENV["PATH"] = File.expand_path File.join(File.dirname(__FILE__), '..', 'driver')
+          http_client = Selenium::WebDriver::Remote::Http::Default.new
+          http_client.timeout = 120
+          download_directory = "#{Dir.pwd}/downloads"
+          download_directory.gsub!("/", "\\") if  Selenium::WebDriver::Platform.windows?
+          profile = Selenium::WebDriver::Chrome::Profile.new
+          profile['download.prompt_for_download'] = false
+          profile['download.default_directory'] = download_directory
+          @browser = Watir::Browser.new :chrome, :profile => profile, :http_client => http_client, :switches => %w[--ignore-certificate-errors --disable-popup-blocking --disable-translate]
         else
           raise 'unsupported browser type.'
       end

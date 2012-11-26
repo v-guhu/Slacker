@@ -192,19 +192,6 @@ copyright@Phiso Hu'
         welcome_label.configure('foreground' => 'black')
       end
 
-      date_label.bind('Enter') do
-        $threads["time"] = Thread.new() do
-          Thread.current[:name] = "show time"
-          #loop do
-          #now = Time.now
-          #date =  now.year.to_s + '年' + now.month.to_s + '月' + now.day.to_s + '日' + '  ' + now.hour.to_s + ':' + now.min.to_s + ':' + now.sec.to_s
-          #date_label.text = date
-          #  sleep(1)
-          #end
-          Thread.kill(Thread.current)
-        end
-      end
-
       manual_input_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)

@@ -1,7 +1,9 @@
 #coding: utf-8
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 require 'tk'
+require 'date'
 require 'count'
+require 'common_method'
 
 module BaseUI
 
@@ -31,6 +33,7 @@ copyright@Phiso Hu'
 
   class UI
     attr_accessor :root
+    attr_accessor :date_label
 
     def initialize
       create_ui
@@ -40,7 +43,7 @@ copyright@Phiso Hu'
       @root = create_root
       create_menu
       create_canvas
-      loop
+      #loop
     end
 
     def create_root
@@ -101,6 +104,17 @@ copyright@Phiso Hu'
         height 2
         pack('padx' => '2', 'pady' => '2', 'side' => 'left', 'in' => welcome_frame)
         font "arial 10 bold"
+      end
+
+      @date_label = TkLabel.new(root) do
+        now  = Time.now
+        date =  prefix_zero(now.hour) + ':' + prefix_zero(now.min) + ':' + prefix_zero(now.sec) + '  ' + prefix_zero(now.year) + '年' + prefix_zero(now.month) + '月' + prefix_zero(now.day) + '日'
+        text   date
+        height 2
+        #background "#EDE223"
+        foreground "#0F9EEE"
+        place('relx' => 0.75,'rely' => 0.006)
+        font "arial 9 bold"
       end
 
       manual_input_button = TkButton.new(root) do
@@ -176,6 +190,19 @@ copyright@Phiso Hu'
 
       welcome_label.bind('Leave') do
         welcome_label.configure('foreground' => 'black')
+      end
+
+      date_label.bind('Enter') do
+        $threads["time"] = Thread.new() do
+          Thread.current[:name] = "show time"
+          #loop do
+          #now = Time.now
+          #date =  now.year.to_s + '年' + now.month.to_s + '月' + now.day.to_s + '日' + '  ' + now.hour.to_s + ':' + now.min.to_s + ':' + now.sec.to_s
+          #date_label.text = date
+          #  sleep(1)
+          #end
+          Thread.kill(Thread.current)
+        end
       end
 
       manual_input_button.comman = Proc.new do
@@ -437,11 +464,17 @@ Please try again.
                 #system('ruby.exe open_bug_result.rb')
                 Thread.kill(Thread.current)
               end
+
             end
+
           end
+
         end
+
       end
 
     end
+
   end
+
 end

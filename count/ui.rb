@@ -4,6 +4,7 @@ require 'tk'
 require 'date'
 require 'count'
 require 'common_method'
+require 'observer'
 
 module BaseUI
 
@@ -33,7 +34,9 @@ copyright@Phiso Hu'
 
   class UI
     attr_accessor :root
+    attr_accessor :clock
     attr_accessor :date_label
+    attr_accessor :clock_canvas
 
     def initialize
       create_ui
@@ -43,6 +46,7 @@ copyright@Phiso Hu'
       @root = create_root
       create_menu
       create_canvas
+      append_clock
       #loop
     end
 
@@ -54,10 +58,20 @@ copyright@Phiso Hu'
         geometry('650x500')
         resizable(0,0)
         if Dir.pwd.to_s.encoding.to_s != 'GBK'
-           iconbitmap "#{Dir.pwd}/icon/crw.ico"
+           iconbitmap "#{Dir.pwd}/images/crw.ico"
         end
       end
       return root
+    end
+
+    def append_clock
+      @clock_canvas = TkCanvas.new(root) do
+        place('relx' => 0.1,'rely' => 0.35)
+      end
+      @clock_canvas.move(0, -500, -500)
+      @clock = Clock.new()
+      clock_view = ClockView.new(@clock_canvas)
+      clock.add_observer(clock_view)
     end
 
     def loop
@@ -71,10 +85,10 @@ copyright@Phiso Hu'
       #menu_setting   =  TkMenu.new(menu_bar)
 
       menu_help_click = Proc.new do
-        Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '关于Sales Taxes', 'parent' => root, 'message' => HELP)
+        Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '关于Sales Taxes', 'parent' => root, 'message' => HELP)
       end
       menu_about_click = Proc.new do
-        msg_box = Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '关于Sales Taxes', 'parent' => root, 'message' => INFO)
+        msg_box = Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '关于Sales Taxes', 'parent' => root, 'message' => INFO)
       end
       menu_exit_click = Proc.new{exit}
       menu_help.add('command', 'label' => "帮助", 'command' => menu_help_click, 'underline' => 0)
@@ -195,11 +209,11 @@ copyright@Phiso Hu'
       manual_input_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           input_text.configure('state' => 'normal', 'background' => 'orange')
@@ -209,11 +223,11 @@ copyright@Phiso Hu'
       input_form_file_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           file_types = [ ['Text file', ['.txt', '.text']],
@@ -237,11 +251,11 @@ copyright@Phiso Hu'
       analysis_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if input_text.background == 'orange'
@@ -292,7 +306,7 @@ Please try again")
               Thread.kill(Thread.current)
             end
           else
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => NOLABRUN_INFO)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => NOLABRUN_INFO)
           end
         end
       end
@@ -300,11 +314,11 @@ Please try again")
       analysis_result_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if output_text.background == 'orange'
@@ -314,7 +328,7 @@ Please try again")
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_ANLYSIS_INFO)
+            r = Tk.messageBox('type' => "yesno", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_ANLYSIS_INFO)
             if r == 'yes'
               $threads["open anlysis result thread"] = Thread.new do
                 system("open_anlysis_result_html.bat")
@@ -329,11 +343,11 @@ Please try again")
       start_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if input_text.background == 'orange'
@@ -391,7 +405,7 @@ Please try again.
               Thread.kill(Thread.current)
             end
           else
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => NOLABRUN_INFO)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => NOLABRUN_INFO)
           end
         end
       end
@@ -399,11 +413,11 @@ Please try again.
       output_to_excel_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if output_text.background == 'orange'
@@ -414,7 +428,7 @@ Please try again.
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO1)
+            r = Tk.messageBox('type' => "yesno", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO1)
             if r == 'yes'
               $threads["open result thread"] = Thread.new do
                 # disable it for seldom use
@@ -430,11 +444,11 @@ Please try again.
       html_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if output_text.background == 'orange'
@@ -444,24 +458,92 @@ Please try again.
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO0)
+            r = Tk.messageBox('type' => "yesno", 'images' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO0)
             if r == 'yes'
               $threads["open result thread"] = Thread.new do
                 system("open_bug_result_html.bat")
                 #system('ruby.exe open_bug_result.rb')
                 Thread.kill(Thread.current)
               end
-
             end
-
           end
-
         end
+      end
+    end
 
+    def show_time
+      now = Time.now
+      date =  prefix_zero(now.hour) + ':' + prefix_zero(now.min) + ':' + prefix_zero(now.sec) + '  ' + prefix_zero(now.year) + '年' + prefix_zero(now.month) + '月' + prefix_zero(now.day) + '日'
+      self.date_label.text = date
+    end
+
+    #下面时钟的两个类Clock 和 ClockView 源码来至开源中国： http://www.oschina.net/code/snippet_270852_9935
+    #作者： KimboQi
+    #修改： xausee
+
+    class Clock
+      #观察者模式
+      include Observable
+
+      def getPointAngle(time)
+        #获取以y轴为线顺时针的角度,例如：3点钟则时针的角度为90度
+        sec_angle = time.sec / 60.0 * 360
+        min_angle = time.min / 60.0 * 360 + sec_angle / 360 / 60
+        hour_angle = time.hour.divmod(12)[1] / 12.0 * 360 + min_angle / 360 * 30
+        #转换成以xy轴的角度，例如3点钟，则时针的角度为0度，12点时针的角度为180度
+        return [hour_angle, min_angle, sec_angle].collect do |x|
+          x <= 90 ? 90 -x : 450 - x
+        end
+      end
+
+      def run
+        angles = self.getPointAngle(Time.now)
+        changed()
+        notify_observers(angles)
       end
 
     end
 
-  end
+    class ClockView
+      LENGTH_ARRAY = [40, 50, 70]
 
+      def initialize(widget)
+        @cur_sec_line = nil
+        @cur_hour_line = nil
+        @cur_min_line = nil
+        @canvas = TkCanvas.new(widget, 'width' => '180', 'heigh' => '180')
+        timg = TkPhotoImage.new('file' => File.join(File.dirname(__FILE__), '/images/', 'w.gif'))
+        t = TkcImage.new(@canvas, 100, 100, 'image' => timg)
+        @canvas.pack('side' => 'left', 'fill' => 'both')
+      end
+
+      def update(angles)
+        coords = Array.new
+        #将角度转换成在界面上的坐标
+        angles.to_a().each_with_index do |mangle, index|
+          cy = Math.sin(mangle / 180 * Math::PI) * LENGTH_ARRAY[index]
+          cx = Math.cos(mangle / 180  * Math::PI) * LENGTH_ARRAY[index]
+          cx = cx + 100
+          cy = 100 - cy
+          coords[index] = [cx, cy]
+        end
+        @cur_sec_line != nil and @cur_sec_line.delete()
+        @cur_min_line != nil and @cur_min_line.delete()
+        @cur_hour_line != nil and @cur_hour_line.delete()
+
+        hline = TkcLine.new(@canvas, 100, 100, coords[0][0], coords[0][1], "width" => "3")
+        mline = TkcLine.new(@canvas, 100, 100, coords[1][0], coords[1][1], "width" => "2")
+        sline = TkcLine.new(@canvas, 100, 100, coords[2][0], coords[2][1], "width" => "1")
+
+        [hline, mline, sline].map { |aline|
+          aline.fill 'white'
+        }
+
+        @cur_sec_line = sline
+        @cur_hour_line = hline
+        @cur_min_line = mline
+      end
+    end
+
+  end
 end

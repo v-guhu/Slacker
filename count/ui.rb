@@ -67,9 +67,8 @@ copyright@Phiso Hu'
     def append_clock
       @clock_canvas = TkCanvas.new(root) do
         #place('relx' => 1,'rely' => 1)
-        place('relx' => 0.1,'rely' => 0.35)
+        place('relx' => 0.025,'rely' => 0.185, 'width' => '305', 'heigh' => '400')
       end
-      @clock_canvas.move(0, -500, -500)
       @clock = Clock.new()
       clock_view = ClockView.new(@clock_canvas)
       clock.add_observer(clock_view)
@@ -185,7 +184,7 @@ copyright@Phiso Hu'
         width 50
         height 30
         state 'disabled'
-        background '#004488'  #'black'
+        background  'black' #'#004488'
         font GT_FONT
         pack('padx' => '5', 'pady' => '5', 'side' => 'left', 'after' => start_button, 'in' => result_frame)
       end
@@ -508,15 +507,15 @@ Please try again.
     end
 
     class ClockView
-      LENGTH_ARRAY = [50, 70, 90]
+      LENGTH_ARRAY = [40, 60, 80]
 
       def initialize(widget)
         @cur_sec_line = nil
         @cur_hour_line = nil
         @cur_min_line = nil
-        @canvas = TkCanvas.new(widget, 'width' => '220', 'heigh' => '220')
-        timg = TkPhotoImage.new('file' => File.join(File.dirname(__FILE__), '/images/', 'deepblue.gif'))
-        t = TkcImage.new(@canvas, 110, 110, 'image' => timg)
+        @canvas = TkCanvas.new(widget, 'width' => '300', 'heigh' => '390')
+        timg = TkPhotoImage.new('file' => File.join(File.dirname(__FILE__), '/images/', 'black.gif'))
+        t = TkcImage.new(@canvas, 154, 180, 'image' => timg)
         @canvas.pack('side' => 'left', 'fill' => 'both')
       end
 
@@ -526,20 +525,20 @@ Please try again.
         angles.to_a().each_with_index do |mangle, index|
           cy = Math.sin(mangle / 180 * Math::PI) * LENGTH_ARRAY[index]
           cx = Math.cos(mangle / 180  * Math::PI) * LENGTH_ARRAY[index]
-          cx = cx + 110
-          cy = 110 - cy
+          cx = cx + 152
+          cy = 165 - cy
           coords[index] = [cx, cy]
         end
         @cur_sec_line != nil and @cur_sec_line.delete()
         @cur_min_line != nil and @cur_min_line.delete()
         @cur_hour_line != nil and @cur_hour_line.delete()
 
-        hline = TkcLine.new(@canvas, 110, 110, coords[0][0], coords[0][1], "width" => "3")
-        mline = TkcLine.new(@canvas, 110, 110, coords[1][0], coords[1][1], "width" => "2")
-        sline = TkcLine.new(@canvas, 110, 110, coords[2][0], coords[2][1], "width" => "1")
+        hline = TkcLine.new(@canvas, 152, 165, coords[0][0], coords[0][1], "width" => "3")
+        mline = TkcLine.new(@canvas, 152, 165, coords[1][0], coords[1][1], "width" => "2")
+        sline = TkcLine.new(@canvas, 152, 165, coords[2][0], coords[2][1], "width" => "1")
 
         [hline, mline, sline].map { |aline|
-          aline.fill 'gold'
+          aline.fill 'white'
         }
 
         @cur_sec_line = sline

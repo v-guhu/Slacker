@@ -8,29 +8,40 @@ require 'observer'
 
 module BaseUI
 
-  G_FONT          =  TkFont.new('times 10 bold')
-  GT_FONT         =  TkFont.new('times 10')
-  INPUT_PATH      =  '..\\files\\labruns.txt'
-  OUTPUT_PATH     =  '..\\files\\output.txt'
-  HTML_PATH       =  '..\\files\\bug_result.html'
-  NOLABRUN_INFO   =  '请输入需要统计的labrun数据。'
-  OPEN_FILE_INFO0 =  '您还没有开始此次bug的统计。
-  是否打开上一次的结果？'
-  OPEN_FILE_INFO1 =  '您还没有开始此次bug的统计。
-是否导出上一次的bug的excel结果？'
-  OPEN_ANLYSIS_INFO  =  '您还没有开始此次labrun的分析。
-  是否打开上一次的分析结果？'
-
-  INFO            = '
-   Bug 统计小工具
+  BUTTON_FONT          =  TkFont.new('arial 8 bold')
+  TEXT_FONT            =  TkFont.new('times 10')
+  TEXT_CORLOR          =  '#003366'
+  MAIN_BACKGROUND      =  '#FDEFB0'
+  BUTTON_BACKGROUND    =  '#B5E84F'
+  MENU_BACKGROUND      =  '#003366'
+  MENU_FOREGROUND      =  '#FFFFFF'
+  BUTTON_RELY        =  0.085
+  INOUT_TEXT_RELY    =  0.160
+  INPUT_PATH           =  '..\\files\\labruns.txt'
+  OUTPUT_PATH          =  '..\\files\\output.txt'
+  HTML_PATH            =  '..\\files\\bug_result.html'
+  NOLABRUN_INFO        =  'Please input the labrun link.'
+  OPEN_FILE_INFO0      =  'No bug count start this time, Do you want to open last html result?'
+  OPEN_FILE_INFO1      =  'No bug count start this time, Do you want to open last excel result？'
+  OPEN_ANLYSIS_INFO    =  'No analysis start this time, Do you want to open last analysis result？'
+  INFO                 = '
+   Bug Count Tool
      version 1.4
 copyright@Phiso Hu'
-  HELP            =  '统计bug有两种输入数据的方式：
-1 手动输入： 点击‘手动输入’按钮即可在下面橘色的输入区输入你要统计的Labrun的URL。
-2 从文件导入： 通过点击‘导入文件’按钮，您也可以导入保存在文件中的Labrun URL 数据。
-最后点击‘开始统计’按钮， 耐心等待结果吧。统计愉快！'
-  ISCOUNTING      =  '请稍后，正在统计中。。。'
-  ISANLYSISING    =  '请稍后，正在分析中。。。'
+  HELP                 =  'Usage：
+
+1 Bug Count:
+  (1) Click \'Input\' button, fill your labrun(s) into the following orange text area
+  (2) Click \'Start Count\' button to start bug count
+  (3) Wait for count finish, click \'Html Result\' button to view html result
+  (4) If you want to output bug as excel form, please click \'Excel Result\' button to start the thread then view the excel result
+
+2 Labrun Analysis:
+  (1) Click \'Input\' button, fill your labrun(s) into the following orange text area
+  (2) Click \'Analysis\' button to start analysis
+  (3) Wait for analysis finish, click \'Analysis Result\'  button to view the result'
+  ISCOUNTING           =  'Please wait, I\'m counting...'
+  ISANLYSISING         =  'Please wait, I\'m analysising...'
 
   class UI
     attr_accessor :root
@@ -52,9 +63,10 @@ copyright@Phiso Hu'
 
     def create_root
       root = TkRoot.new do
-        title 'Bug 统计小工具'
+        title 'Bug Count Tool'
         minsize(650,500)
         maxsize(650,500)
+        background MAIN_BACKGROUND
         geometry('650x500')
         resizable(0,0)
         if Dir.pwd.to_s.encoding.to_s != 'GBK'
@@ -66,8 +78,7 @@ copyright@Phiso Hu'
 
     def append_clock
       @clock_canvas = TkCanvas.new(root) do
-        #place('relx' => 1,'rely' => 1)
-        place('relx' => 0.025,'rely' => 0.185, 'width' => '305', 'heigh' => '400')
+        place('relx' => 0.025,'rely' => INOUT_TEXT_RELY, 'width' => '305', 'heigh' => '410')
       end
       @clock = Clock.new()
       clock_view = ClockView.new(@clock_canvas)
@@ -79,43 +90,58 @@ copyright@Phiso Hu'
     end
 
     def create_menu
-      menu_bar       =  TkMenu.new(root)
-      menu_help      =  TkMenu.new(menu_bar)
-      menu_file      =  TkMenu.new(menu_bar)
+      menu_bar       =  TkMenu.new(root) do
+        background MENU_BACKGROUND
+        foreground MENU_FOREGROUND
+      end
+      menu_help      =  TkMenu.new(menu_bar) do
+        background MENU_BACKGROUND
+        foreground MENU_FOREGROUND
+      end
+
+      menu_file      =  TkMenu.new(menu_bar) do
+        background MENU_BACKGROUND
+        foreground MENU_FOREGROUND
+      end
       #menu_setting   =  TkMenu.new(menu_bar)
 
       menu_help_click = Proc.new do
-        Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '关于Sales Taxes', 'parent' => root, 'message' => HELP)
+        Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Help', 'parent' => root, 'message' => HELP)
       end
       menu_about_click = Proc.new do
-        msg_box = Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '关于Sales Taxes', 'parent' => root, 'message' => INFO)
+        msg_box = Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'About Bug Count Tool', 'parent' => root, 'message' => INFO)
       end
       menu_exit_click = Proc.new{exit}
-      menu_help.add('command', 'label' => "帮助", 'command' => menu_help_click, 'underline' => 0)
-      menu_help.add('command', 'label' => "关于", 'command' => menu_about_click, 'underline' => 0)
-      menu_file.add('command', 'label' => "关闭", 'command' => menu_exit_click, 'underline' => 0)
-      menu_bar.add('cascade', 'menu'  => menu_file, 'label' => "文件")
+      menu_help.add('command', 'label' => "Help", 'command' => menu_help_click, 'underline' => 0)
+      menu_help.add('command', 'label' => "About", 'command' => menu_about_click, 'underline' => 0)
+      menu_file.add('command', 'label' => "Close", 'command' => menu_exit_click, 'underline' => 0)
+      menu_bar.add('cascade', 'menu'  => menu_file, 'label' => "File")
       #menu_bar.add('cascade', 'menu'  => menu_setting, 'label' => "设置")
-      menu_bar.add('cascade', 'menu'  => menu_help, 'label' => "帮助")
+      menu_bar.add('cascade', 'menu'  => menu_help, 'label' => "Help")
       root.menu(menu_bar)
     end
 
     def create_canvas
       welcome_frame = TkFrame.new(root) do
+        background MAIN_BACKGROUND
         pack('padx' => '2', 'pady' => '2', 'side' => 'top')
       end
 
       buttons_frame = TkFrame.new(root) do
+        background MAIN_BACKGROUND
         pack('padx' => '2', 'pady' => '2', 'side' => 'top', 'after' => welcome_frame, 'fill' => 'x')
       end
 
       result_frame = TkFrame.new(root) do
+        background MAIN_BACKGROUND
         pack('padx' => '2', 'pady' => '2', 'side' => 'top', 'after' => buttons_frame)
       end
 
       welcome_label = TkLabel.new(root) do
-        text  '欢迎使用Bug 统计小工具'
+        text  'Thank You For Using Bug Count Tool'
         height 2
+        background MAIN_BACKGROUND
+        foreground TEXT_CORLOR
         pack('padx' => '2', 'pady' => '2', 'side' => 'left', 'in' => welcome_frame)
         font "arial 10 bold"
       end
@@ -125,95 +151,121 @@ copyright@Phiso Hu'
         date =  prefix_zero(now.hour) + ':' + prefix_zero(now.min) + ':' + prefix_zero(now.sec) + '  ' + prefix_zero(now.year) + '年' + prefix_zero(now.month) + '月' + prefix_zero(now.day) + '日'
         text   date
         height 2
-        #background "#EDE223"
-        foreground "#0F9EEE"
-        place('relx' => 0.75,'rely' => 0.006)
+        background MAIN_BACKGROUND
+        foreground TEXT_CORLOR
+        place('relx' => 0.8,'rely' => 0.006)
         font "arial 9 bold"
       end
 
       manual_input_button = TkButton.new(root) do
-        text  '手动输入'
+        text  'Input'
         height 1
-        font G_FONT
-        pack('padx' => '12', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.025,'rely' => BUTTON_RELY)
+        #pack('padx' => '12', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
       end
 
-      input_form_file_button = TkButton.new(root) do
-        text  '导入文件'
-        height 1
-        font G_FONT
-        pack('padx' => '10', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
-      end
+      #input_form_file_button = TkButton.new(root) do
+      #  text  'Input File'
+      #  height 1
+      #  font BUTTON_FONT
+      #  pack('padx' => '10', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
+      #end
 
       analysis_button = TkButton.new(root) do
-        text  'Labrun分析'
+        text  'Analysis'
         height 1
-        font G_FONT
-        pack('padx' => '10', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.150,'rely' => BUTTON_RELY)
+        #pack('padx' => '5', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
       end
 
       analysis_result_button = TkButton.new(root) do
-        text  '分析结果'
+        text  'Analysis Result'
         height 1
-        font G_FONT
-        pack('padx' => '10', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
+        width 15
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.275,'rely' => BUTTON_RELY)
+        #pack('padx' => '5', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
       end
 
       start_button = TkButton.new(root) do
-        text  'Bug统计'
+        text  'Start Count'
         height 1
-        font G_FONT
-        pack('padx' => '15', 'pady' => '5',  'side' => 'left',  'in' => buttons_frame)
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.455,'rely' => BUTTON_RELY)
+        #pack('padx' => '15', 'pady' => '5',  'side' => 'left',  'in' => buttons_frame)
       end
 
       html_button = TkButton.new(root) do
-        text  'html结果'
+        text  'Html Result'
         height 1
-        font G_FONT
-        pack('padx' => '10', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.580,'rely' => BUTTON_RELY)
+        #pack('padx' => '5', 'pady' => '5', 'side' => 'left', 'in' => buttons_frame)
       end
 
       output_to_excel_button = TkButton.new(root) do
-        text  '表格导出'
+        text  'Excel Result'
         height 1
-        font G_FONT
-        pack('padx' => '15', 'pady' => '5', 'side' => 'right', 'in' => buttons_frame)
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.705,'rely' => BUTTON_RELY)
+        #pack('padx' => '15', 'pady' => '5', 'side' => 'right', 'in' => buttons_frame)
       end
 
       input_text = TkText.new(root) do
         width 50
-        height 30
+        height 27
         state 'disabled'
-        background  'black' #'#004488'
-        font GT_FONT
-        pack('padx' => '5', 'pady' => '5', 'side' => 'left', 'after' => start_button, 'in' => result_frame)
+        background  'black'
+        font TEXT_FONT
+        place('relx' => 0.025,'rely' => INOUT_TEXT_RELY)
+        #pack('padx' => '5', 'pady' => '5', 'side' => 'left', 'after' => start_button, 'in' => result_frame)
       end
 
       output_text = TkText.new(root) do
         width 50
-        height 30
+        height 27
         state 'disabled'
-        background 'gray'
-        font GT_FONT
-        pack( 'padx' => '5', 'pady' => '5', 'side' => 'left', 'after' => input_text, 'in' => result_frame)
+        background 'black'
+        font TEXT_FONT
+        place('relx' => 0.500,'rely' => INOUT_TEXT_RELY)
+        #pack( 'padx' => '5', 'pady' => '5', 'side' => 'left', 'after' => input_text, 'in' => result_frame)
       end
 
       welcome_label.bind('Enter') do
-        welcome_label.configure('foreground' => 'orange')
+        welcome_label.configure('foreground' => '#0F9EEE')
       end
 
       welcome_label.bind('Leave') do
-        welcome_label.configure('foreground' => 'black')
+        welcome_label.configure('foreground' => TEXT_CORLOR)
       end
 
       manual_input_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           input_text.configure('state' => 'normal', 'background' => 'orange')
@@ -222,42 +274,42 @@ copyright@Phiso Hu'
         end
       end
 
-      input_form_file_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
-          if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
-          end
-
-          if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
-          end
-        else
-          file_types = [ ['Text file', ['.txt', '.text']],
-                         ['All files', ['*']]
-          ]
-          file_path = Tk.getOpenFile('filetypes' => file_types)
-          if file_path.empty?
-            return
-          end
-          input_text.configure('state' => 'normal', 'background' => 'orange')
-          input_text.delete('1.0', 'end')
-          File.open(file_path, 'r') do |file|
-            while line = file.gets
-              input_text.insert('end', line)
-            end
-          end
-          input_text.configure('state' => 'disabled')
-        end
-      end
+      #input_form_file_button.comman = Proc.new do
+      #  if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
+      #    if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
+      #      Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
+      #    end
+      #
+      #    if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
+      #      Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
+      #    end
+      #  else
+      #    file_types = [ ['Text file', ['.txt', '.text']],
+      #                   ['All files', ['*']]
+      #    ]
+      #    file_path = Tk.getOpenFile('filetypes' => file_types)
+      #    if file_path.empty?
+      #      return
+      #    end
+      #    input_text.configure('state' => 'normal', 'background' => 'orange')
+      #    input_text.delete('1.0', 'end')
+      #    File.open(file_path, 'r') do |file|
+      #      while line = file.gets
+      #        input_text.insert('end', line)
+      #      end
+      #    end
+      #    input_text.configure('state' => 'disabled')
+      #  end
+      #end
 
       analysis_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if input_text.background == 'orange'
@@ -283,7 +335,7 @@ copyright@Phiso Hu'
 
 I'm doing anlysis...
 
-After anlysis finished, please click '分析结果' button to view the result.")
+After anlysis finished, please click 'Analysis Result' button to view the result.")
               anlysis_thread = system('ruby.exe anlysis_start.rb')
               if anlysis_thread
                 output_text.clear
@@ -292,7 +344,7 @@ After anlysis finished, please click '分析结果' button to view the result.")
 
 Finished labrun anlysis, all work well.
 
-Please click '分析结果' button to view the result.")
+Please click 'Analysis Result' button to view the result.")
                               #anlysis_thread = system('ruby.exe anlysis_start.rb')
               else
                 output_text.clear
@@ -308,7 +360,7 @@ Please try again")
               Thread.kill(Thread.current)
             end
           else
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => NOLABRUN_INFO)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => NOLABRUN_INFO)
           end
         end
       end
@@ -316,11 +368,11 @@ Please try again")
       analysis_result_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if output_text.background == 'orange'
@@ -330,7 +382,7 @@ Please try again")
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_ANLYSIS_INFO)
+            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => OPEN_ANLYSIS_INFO)
             if r == 'yes'
               $threads["open anlysis result thread"] = Thread.new do
                 system("open_anlysis_result_html.bat")
@@ -345,11 +397,11 @@ Please try again")
       start_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if input_text.background == 'orange'
@@ -374,7 +426,7 @@ Please try again")
 
 I'm counting bugs...
 
-After finish please click 'html结果' to view result as html file, or click '表格导出' to export bugs from JIRA as excel file.")
+After finish please click 'Html Result' to view result as html file, or click 'Excel Result' to export bugs from JIRA as excel file.")
               count_thread = system('ruby.exe count_start.rb')
               if count_thread
                 $stdout.puts "Finished bug count, all work well."
@@ -383,7 +435,7 @@ After finish please click 'html结果' to view result as html file, or click '�
 
 Finished bug count, all work well.
 
-Please click 'html结果' to view result as html file, or click '表格导出' to export bugs from JIRA as excel file.
+Please click 'html结果' to view result as html file, or click 'Excel Result' to export bugs from JIRA as excel file.
 The Labrun hyperlink(s) also have been added to excel for every bug.
 
 ")
@@ -407,7 +459,7 @@ Please try again.
               Thread.kill(Thread.current)
             end
           else
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => NOLABRUN_INFO)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => NOLABRUN_INFO)
           end
         end
       end
@@ -415,11 +467,11 @@ Please try again.
       output_to_excel_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if output_text.background == 'orange'
@@ -430,7 +482,7 @@ Please try again.
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO1)
+            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => OPEN_FILE_INFO1)
             if r == 'yes'
               $threads["open result thread"] = Thread.new do
                 # disable it for seldom use
@@ -446,11 +498,11 @@ Please try again.
       html_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISCOUNTING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
           end
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => ISANLYSISING)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
           if output_text.background == 'orange'
@@ -460,7 +512,7 @@ Please try again.
               Thread.kill(Thread.current)
             end
           else
-            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => '提示', 'parent' => root, 'message' => OPEN_FILE_INFO0)
+            r = Tk.messageBox('type' => "yesno", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => OPEN_FILE_INFO0)
             if r == 'yes'
               $threads["open result thread"] = Thread.new do
                 system("open_bug_result_html.bat")
@@ -475,7 +527,7 @@ Please try again.
 
     def show_time
       now = Time.now
-      date =  prefix_zero(now.hour) + ':' + prefix_zero(now.min) + ':' + prefix_zero(now.sec) + '  ' + prefix_zero(now.year) + '年' + prefix_zero(now.month) + '月' + prefix_zero(now.day) + '日'
+      date =  prefix_zero(now.hour) + ':' + prefix_zero(now.min) + ':' + prefix_zero(now.sec) + '  ' + prefix_zero(now.month) + '.' + prefix_zero(now.day) + '.' + prefix_zero(now.year)
       self.date_label.text = date
     end
 
@@ -513,9 +565,10 @@ Please try again.
         @cur_sec_line = nil
         @cur_hour_line = nil
         @cur_min_line = nil
-        @canvas = TkCanvas.new(widget, 'width' => '300', 'heigh' => '390')
+        @canvas = TkCanvas.new(widget, 'width' => '300', 'heigh' => '410')
         timg = TkPhotoImage.new('file' => File.join(File.dirname(__FILE__), '/images/', 'black.gif'))
         t = TkcImage.new(@canvas, 154, 180, 'image' => timg)
+        #@canvas.place('relx' => 0.0,'rely' => 0)
         @canvas.pack('side' => 'left', 'fill' => 'both')
       end
 

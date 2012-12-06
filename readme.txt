@@ -9,6 +9,8 @@ How to install watir: open command line and execute command
 usage:
 all start here: start.bat.
 
+Use GitHub to control versions, no need to update this file
+
 version 1.4
 1 can export bugs from JIRA now, labruns hyperlink is inserted into the bug excel automatically for every bug(chrome only)
 2 optimize module count code

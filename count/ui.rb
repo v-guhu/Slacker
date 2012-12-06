@@ -50,6 +50,7 @@ copyright@Phiso Hu'
     attr_accessor :clock
     attr_accessor :date_label
     attr_accessor :clock_canvas
+    attr_accessor :picture_canvas
 
     def initialize
       create_ui
@@ -60,6 +61,7 @@ copyright@Phiso Hu'
       create_menu
       create_canvas
       append_clock
+      append_picture
       #loop
     end
 
@@ -85,6 +87,14 @@ copyright@Phiso Hu'
       @clock = Clock.new()
       clock_view = ClockView.new(@clock_canvas)
       clock.add_observer(clock_view)
+    end
+
+    def append_picture
+      @picture_canvas = TkCanvas.new(root) do
+        place('relx' => 0.500,'rely' => INOUT_TEXT_RELY, 'width' => '305', 'heigh' => '410')
+      end
+      timg = TkPhotoImage.new('file' => File.join(File.dirname(__FILE__), '/images/', 'sky.gif'))
+      t = TkcImage.new(@picture_canvas, 154, 180, 'image' => timg)
     end
 
     def loop
@@ -293,6 +303,8 @@ copyright@Phiso Hu'
 
             $threads["anlysis thread"] = Thread.new() do
               Thread.current[:name] = "anlysis thread"
+              # Move picture canvas to hide it
+              @picture_canvas.place('relx' => 1,'rely' => 1)
               output_text.clear
               output_text.insert('end', "
 
@@ -385,6 +397,8 @@ Please try again")
 
             $threads["count thread"] = Thread.new() do
               Thread.current[:name] = "count thread"
+              # Move picture canvas to hide it
+              @picture_canvas.place('relx' => 1,'rely' => 1)
               output_text.insert('end', "
 
 I'm counting bugs...

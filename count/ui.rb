@@ -15,10 +15,10 @@ module BaseUI
   BUTTON_BACKGROUND    =  '#343635'
   MENU_BACKGROUND      =  '#003366'
   MENU_FOREGROUND      =  '#FFFFFF'
-  BUTTON_RELY          =  0.085
-  INOUT_TEXT_RELY      =  0.160
   INOUT_FOREGROUND     =  '#000000'
   INOUT_BACKGROUND     =  '#FFFFFF'
+  BUTTON_RELY          =  0.085
+  INOUT_TEXT_RELY      =  0.160
   INPUT_PATH           =  '..\\files\\labruns.txt'
   OUTPUT_PATH          =  '..\\files\\output.txt'
   HTML_PATH            =  '..\\files\\bug_result.html'
@@ -41,7 +41,9 @@ copyright@Phiso Hu'
 2 Labrun Analysis:
   (1) Click \'Input\' button, fill your labrun(s) into the following white text area
   (2) Click \'Analysis\' button to start analysis
-  (3) Wait for analysis finish, click \'Analysis Result\'  button to view the result'
+  (3) Wait for analysis finish, click \'Analysis Result\'  button to view the result
+
+If you want to come back to start UI, please click \'Reset\' button'
   ISCOUNTING           =  'Please wait, I\'m counting...'
   ISANLYSISING         =  'Please wait, I\'m analysising...'
 
@@ -229,6 +231,16 @@ copyright@Phiso Hu'
         foreground TEXT_CORLOR
         font BUTTON_FONT
         place('relx' => 0.705,'rely' => BUTTON_RELY)
+      end
+
+      reset_button = TkButton.new(root) do
+        text  'Reset'
+        height 1
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 0.845,'rely' => BUTTON_RELY)
       end
 
       input_text = TkText.new(root) do
@@ -469,6 +481,21 @@ Please try again.
               end
             end
           end
+        end
+      end
+
+      reset_button.comman = Proc.new do
+        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) || (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?))
+          if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
+          end
+
+          if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
+          end
+        else
+          @clock_canvas.place('relx' => 0.025, 'rely' => INOUT_TEXT_RELY)
+          @picture_canvas.place('relx' => 0.500, 'rely' => INOUT_TEXT_RELY)
         end
       end
 

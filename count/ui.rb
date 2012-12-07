@@ -494,6 +494,8 @@ Please try again.
             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
+          input_text.configure('state' => 'disabled', 'background' => 'black')
+          output_text.configure('state' => 'disabled', 'background' => 'black')
           @clock_canvas.place('relx' => 0.025, 'rely' => INOUT_TEXT_RELY)
           @picture_canvas.place('relx' => 0.500, 'rely' => INOUT_TEXT_RELY)
         end

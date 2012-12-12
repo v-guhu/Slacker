@@ -82,7 +82,7 @@ module Count
       k = 2
       while browser.table(:class => "DefaultGrid").table(:class => "GridViewCurrButton").td(:class => "scott").link(:text => k.to_s).exist?
         browser.table(:class => "DefaultGrid").table(:class => "GridViewCurrButton").td(:class => "scott").link(:text => k.to_s).click
-        sleep 2
+        sleep 5
         k  += 1
         i=0
         loop do

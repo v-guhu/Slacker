@@ -281,6 +281,7 @@ If you want to come back to start UI, please click \'Reset\' button'
             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
+          input_text.delete('1.0', 'end')
           input_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)
           # move clock to invisible place
           @clock_canvas.place('relx' => 1,'rely' => 1)
@@ -494,6 +495,7 @@ Please try again.
             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
           end
         else
+          input_text.delete('1.0', 'end')
           input_text.configure('state' => 'disabled', 'background' => 'black')
           output_text.configure('state' => 'disabled', 'background' => 'black')
           @clock_canvas.place('relx' => 0.025, 'rely' => INOUT_TEXT_RELY)

@@ -342,6 +342,7 @@ Please click 'Analysis Result' button to view the result.")
 Sorry, an error occurred when anlysis labruns.
 
 Please try again")
+                Tk.messageBox('type' => "ok", 'icon' => "error", 'title' => 'Info', 'parent' => root, 'message' => 'An error occurred when anlysis labruns')
               end
               # configure the state of output text area
               output_text.configure('state' => 'disabled')
@@ -438,6 +439,7 @@ Sorry, an error occurred when count bugs.
 Please try again.
 
 ")
+                Tk.messageBox('type' => "ok", 'icon' => "error", 'title' => 'Info', 'parent' => root, 'message' => 'An error occurred when count bugs.')
               end
 
               # Count finish and write result to UI

@@ -28,20 +28,28 @@ module BaseUI
   OPEN_ANLYSIS_INFO    =  'No analysis start this time, Do you want to open last analysis result？'
   INFO                 =  '
    Bug Count Tool
-     version 1.4
+     version 1.5
 copyright@Phiso Hu'
   HELP                 =  'Usage：
+Open file menu, select what you want. Three functions are avaible.
 
-1 Bug Count:
-  (1) Click \'Input\' button, fill your labrun(s) into the following white text area
-  (2) Click \'Start Count\' button to start bug count
-  (3) Wait for count finish, click \'Html Result\' button to view html result
-  (4) If you want to output bug as excel form, please click \'Excel Result\' button to start the thread then view the excel result
-
-2 Labrun Analysis:
+1 Labrun Analysis:
   (1) Click \'Input\' button, fill your labrun(s) into the following white text area
   (2) Click \'Analysis\' button to start analysis
   (3) Wait for analysis finish, click \'Analysis Result\'  button to view the result
+
+2 Bug Count:
+  (1) Click \'Input\' button, fill your labrun(s) into the following white text area
+  (2) Click \'Start Count\' button to start bug count
+  (3) Wait count finish, click \'Html Result\' button to view html result
+  (4) If you want to output bug as excel form, please click \'Excel Result\' button to start the thread then view the excel result
+
+3 Labrun Monitor:
+  (1) Click \'Input\' button, fill your labrun(s) into the following white text area
+  (2) Click \'Config\' button, to set the loop check time(default is 15 minutes)
+  (3) Click \'Autorun\' button to start monitor, it will check the status of your labruns, and run it automatically for you.
+  (4) If you want to stop monitor, please hit \'Reset\' button.
+
 
 If you want to come back to start UI, please click \'Reset\' button'
   ISCOUNTING           =  'Please wait, I\'m counting...'
@@ -51,11 +59,23 @@ If you want to come back to start UI, please click \'Reset\' button'
   class UI
     attr_accessor :root
     attr_accessor :clock
-    attr_accessor :date_label
     attr_accessor :clock_canvas
     attr_accessor :picture_canvas
     attr_accessor :monitor_time
     attr_accessor :subpage_load_time
+
+    attr_accessor :date_label
+    attr_accessor :input_button
+    attr_accessor :analysis_button
+    attr_accessor :analysis_result_button
+    attr_accessor :start_button
+    attr_accessor :html_button
+    attr_accessor :output_to_excel_button
+    attr_accessor :reset_button
+    attr_accessor :autorun_button
+    attr_accessor :config_button
+    attr_accessor :input_text
+    attr_accessor :output_text
 
     def initialize
       create_ui
@@ -169,7 +189,7 @@ If you want to come back to start UI, please click \'Reset\' button'
       subpage_load_entry.place('height' => 25, 'width'  => 100, 'x' => 140, 'y' => 40)
       min_label.place('x' => 250, 'y' => 10)
       sec_label.place('x' => 250, 'y' => 40)
-      apply_button.place('height' => 25, 'width' => 150, 'x' => 100, 'y' => 80)
+      apply_button.place('height' => 25, 'width' => 100, 'x' => 140, 'y' => 80)
 
       @monitor_time      = var_monitor_time.value
       @subpage_load_time = var_subpage_load_time.value
@@ -182,6 +202,28 @@ If you want to come back to start UI, please click \'Reset\' button'
       end
 
       return true
+    end
+
+    def check_threads
+      if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
+          (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
+          (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
+
+         if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
+           Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
+         end
+
+         if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
+           Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
+         end
+
+         if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
+           Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
+         end
+        return 'one thread is running'
+      else
+        return 'no thread is running'
+      end
     end
 
     def loop
@@ -210,12 +252,57 @@ If you want to come back to start UI, please click \'Reset\' button'
       menu_help_click = Proc.new do
         Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Help', 'parent' => root, 'message' => HELP)
       end
+
       menu_about_click = Proc.new do
         msg_box = Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'About Bug Count Tool', 'parent' => root, 'message' => INFO)
       end
+
       menu_exit_click = Proc.new{exit}
+
+      menu_analysis_click = Proc.new do
+        @input_button.place('relx' => 0.025,'rely' => BUTTON_RELY)
+        @reset_button.place('relx' => 0.840,'rely' => BUTTON_RELY)
+        @analysis_button.place('relx' => 0.150,'rely' => BUTTON_RELY)
+        @analysis_result_button.place('relx' => 0.500,'rely' => BUTTON_RELY)
+
+        @start_button.place('relx' => 1,'rely' => 1)
+        @html_button.place('relx' => 1,'rely' => 1)
+        @output_to_excel_button.place('relx' => 1,'rely' => 1)
+        @autorun_button.place('relx' => 1,'rely' => 1)
+        @config_button.place('relx' => 1,'rely' => 1)
+      end
+
+      menu_count_click = Proc.new do
+        @input_button.place('relx' => 0.025,'rely' => BUTTON_RELY)
+        @reset_button.place('relx' => 0.840,'rely' => BUTTON_RELY)
+        @start_button.place('relx' => 0.150,'rely' => BUTTON_RELY)
+        @html_button.place('relx' => 0.500,'rely' => BUTTON_RELY)
+        @output_to_excel_button.place('relx' => 0.625,'rely' => BUTTON_RELY)
+
+        @analysis_button.place('relx' => 1,'rely' => 1)
+        @analysis_result_button.place('relx' => 1,'rely' => 1)
+        @autorun_button.place('relx' => 1,'rely' => 1)
+        @config_button.place('relx' => 1,'rely' => 1)
+      end
+
+      menu_monitor_click = Proc.new do
+        @input_button.place('relx' => 0.025,'rely' => BUTTON_RELY)
+        @reset_button.place('relx' => 0.840,'rely' => BUTTON_RELY)
+        @autorun_button.place('relx' => 0.150,'rely' => BUTTON_RELY)
+        @config_button.place('relx' => 0.275,'rely' => BUTTON_RELY)
+
+        @analysis_button.place('relx' => 1,'rely' => 1)
+        @analysis_result_button.place('relx' => 1,'rely' => 1)
+        @start_button.place('relx' => 1,'rely' => 1)
+        @html_button.place('relx' => 1,'rely' => 1)
+        @output_to_excel_button.place('relx' => 1,'rely' => 1)
+      end
+
       menu_help.add('command', 'label' => "Help", 'command' => menu_help_click, 'underline' => 0)
       menu_help.add('command', 'label' => "About", 'command' => menu_about_click, 'underline' => 0)
+      menu_file.add('command', 'label' => "Analysis Labruns", 'command' => menu_analysis_click, 'underline' => 0)
+      menu_file.add('command', 'label' => "Count Bug", 'command' => menu_count_click, 'underline' => 0)
+      menu_file.add('command', 'label' => "Monitor Labruns", 'command' => menu_monitor_click, 'underline' => 0)
       menu_file.add('command', 'label' => "Close", 'command' => menu_exit_click, 'underline' => 0)
       menu_bar.add('cascade', 'menu'  => menu_file, 'label' => "File")
       menu_bar.add('cascade', 'menu'  => menu_help, 'label' => "Help")
@@ -238,7 +325,7 @@ If you want to come back to start UI, please click \'Reset\' button'
         pack('padx' => '2', 'pady' => '2', 'side' => 'top', 'after' => buttons_frame)
       end
 
-      welcome_label = TkLabel.new(root) do
+      @welcome_label = TkLabel.new(root) do
         text  'Thank You For Using Bug Count Tool'
         height 2
         background MAIN_BACKGROUND
@@ -258,97 +345,97 @@ If you want to come back to start UI, please click \'Reset\' button'
         font "arial 9 bold"
       end
 
-      input_button = TkButton.new(root) do
+      @input_button = TkButton.new(root) do
         text  'Input'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.025,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      analysis_button = TkButton.new(root) do
+      @analysis_button = TkButton.new(root) do
         text  'Analysis'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.150,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      analysis_result_button = TkButton.new(root) do
+      @analysis_result_button = TkButton.new(root) do
         text  'Analysis Result'
         height 1
         width 15
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.275,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      start_button = TkButton.new(root) do
+      @start_button = TkButton.new(root) do
         text  'Start Count'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.455,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      html_button = TkButton.new(root) do
+      @html_button = TkButton.new(root) do
         text  'Html Result'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.580,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      output_to_excel_button = TkButton.new(root) do
+      @output_to_excel_button = TkButton.new(root) do
         text  'Excel Result'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.705,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      reset_button = TkButton.new(root) do
+      @reset_button = TkButton.new(root) do
         text  'Reset'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.845,'rely' => BUTTON_RELY)
+        place('relx' => 1,'rely' => 1)
       end
 
-      autorun_button = TkButton.new(root) do
+      @autorun_button = TkButton.new(root) do
         text  'Autorun'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.025,'rely' => 0.01)
+        place('relx' => 1,'rely' => 1)
       end
 
-      config_button = TkButton.new(root) do
+      @config_button = TkButton.new(root) do
         text  'Config'
         height 1
         width 10
         background BUTTON_BACKGROUND
         foreground TEXT_CORLOR
         font BUTTON_FONT
-        place('relx' => 0.5,'rely' => 0.01)
+        place('relx' => 1,'rely' => 1)
       end
 
-      input_text = TkText.new(root) do
+      @input_text = TkText.new(root) do
         width 50
         height 27
         state 'disabled'
@@ -358,7 +445,7 @@ If you want to come back to start UI, please click \'Reset\' button'
         place('relx' => 0.025,'rely' => INOUT_TEXT_RELY)
       end
 
-      output_text = TkText.new(root) do
+      @output_text = TkText.new(root) do
         width 50
         height 27
         state 'disabled'
@@ -368,30 +455,17 @@ If you want to come back to start UI, please click \'Reset\' button'
         place('relx' => 0.500,'rely' => INOUT_TEXT_RELY)
       end
 
-      welcome_label.bind('Enter') do
-        welcome_label.configure('foreground' => '#0F9EEE')
+      @welcome_label.bind('Enter') do
+        @welcome_label.configure('foreground' => '#0F9EEE')
       end
 
-      welcome_label.bind('Leave') do
-        welcome_label.configure('foreground' => TEXT_CORLOR)
+      @welcome_label.bind('Leave') do
+        @welcome_label.configure('foreground' => TEXT_CORLOR)
       end
 
-      input_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-            (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-           end
-
-           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-           end
-
-           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-           end
+      @input_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           input_text.delete('1.0', 'end')
           input_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)
@@ -400,22 +474,9 @@ If you want to come back to start UI, please click \'Reset\' button'
         end
       end
 
-      analysis_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-            (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-           end
-
-           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-           end
-
-           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-          end
+      @analysis_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           if input_text.background == INOUT_BACKGROUND
             output_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)
@@ -473,22 +534,9 @@ Please try again")
         end
       end
 
-      analysis_result_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-            (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-           end
-
-           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-           end
-
-           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-           end
+      @analysis_result_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           if output_text.background == INOUT_BACKGROUND
             $threads["open anlysis result thread"] = Thread.new do
@@ -509,22 +557,9 @@ Please try again")
         end
       end
 
-      start_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-            (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-           end
-
-           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-           end
-
-           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-           end
+      @start_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           if input_text.background == INOUT_BACKGROUND
             output_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)
@@ -589,22 +624,9 @@ Please try again.
         end
       end
 
-      output_to_excel_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-            (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-           end
-
-           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-           end
-
-           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-           end
+      @output_to_excel_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           if output_text.background == INOUT_BACKGROUND
             $threads["open result thread"] = Thread.new do
@@ -627,11 +649,11 @@ Please try again.
         end
       end
 
-      config_button.comman = Proc.new do
+      @config_button.comman = Proc.new do
         config_window root
       end
 
-      reset_button.comman = Proc.new do
+      @reset_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
             (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
             (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
@@ -663,22 +685,9 @@ Please try again.
         end
       end
 
-      html_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-            (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-           end
-
-           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-           end
-
-           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-           end
+      @html_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           if output_text.background == INOUT_BACKGROUND
             $threads["open result thread"] = Thread.new do
@@ -699,23 +708,9 @@ Please try again.
         end
       end
 
-      autorun_button.comman = Proc.new do
-        if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
-           (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-           (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
-
-          if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
-          end
-
-          if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
-          end
-
-          if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
-            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISAUTORUNNING)
-          end
-
+      @autorun_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
         else
           if input_text.background == INOUT_BACKGROUND
             output_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)

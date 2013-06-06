@@ -18,7 +18,7 @@ module Excel
       @browser = e.browser
     end
 
-    def jira_login user = 'v-guhu', pwd = 'Ep@198512254'
+    def jira_login user = 'v-guhu', pwd = 'Ep@198512256'
       browser.goto 'https://jira/jira/login.jsp?'
       browser.text_field(:id => 'login-form-username').set user
       browser.text_field(:id => 'login-form-password').set pwd
@@ -27,8 +27,11 @@ module Excel
 
     def query_bugs
       browser.goto 'https://jira/jira/secure/IssueNavigator.jspa'
-      if browser.a(:id => 'switchnavtype').exist?
-        browser.a(:id => 'switchnavtype').click
+
+      if browser.a(:class => "switcher-item active").exist?
+        if browser.a(:class => "switcher-item active").attribute_value("data-id") == "basic"
+          browser.a(:class => "switcher-item active").click
+          end
       end
 
       load_bugs
@@ -38,9 +41,12 @@ module Excel
       end
       bugs_str.chop!
 
-      browser.textarea(:id => 'jqltext').set "ID in (#{bugs_str})"
-      browser.input(:id => 'jqlrunquery').click
-      browser.a(:id => 'viewOptions').click
+      browser.textarea(:id => 'advanced-search').set "ID in (#{bugs_str})"
+      browser.button(:class => 'aui-button search-button').click
+      browser.a(:class => 'header-views header-operations aui-dropdown-trigger aui-dd-link standard icon-views lnk').click
+      browser.wait_until(5){
+          browser.a(:id => 'currentExcelFields').exists?
+      }
       browser.a(:id => 'currentExcelFields').click
       #browser.close
     end

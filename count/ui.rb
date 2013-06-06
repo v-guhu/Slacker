@@ -21,13 +21,15 @@ module BaseUI
   INOUT_TEXT_RELY      =  0.160
   INPUT_PATH           =  '..\\files\\labruns.txt'
   OUTPUT_PATH          =  '..\\files\\output.txt'
+  FILTER_RESULT          =  '..\\files\\filter'
   HTML_PATH            =  '..\\files\\bug_result.html'
   NOLABRUN_INFO        =  'Please input the labrun link.'
   OPEN_FILE_INFO0      =  'No bug count start this time, Do you want to open last html result?'
   OPEN_FILE_INFO1      =  'No bug count start this time, Do you want to open last excel result？'
   OPEN_ANLYSIS_INFO    =  'No analysis start this time, Do you want to open last analysis result？'
+  OPEN_FILTER_INFO     =  'No filter start this time, Do you want to open last filter result？'
   INFO                 =  '
-   Bug Count Tool
+     Slacker
      version 1.5
 copyright@Phiso Hu'
   HELP                 =  'Usage：
@@ -54,6 +56,7 @@ Open file menu, select what you want. Three functions are avaible.
 If you want to come back to start UI, please click \'Reset\' button'
   ISCOUNTING           =  'Please wait, I\'m counting...'
   ISANLYSISING         =  'Please wait, I\'m analysising...'
+  ISFILTERING          =  'Please wait, I\'m filtering...'
   ISAUTORUNNING        =  'Please wait, I\'m monitoring labruns...'
 
   class UI
@@ -66,6 +69,7 @@ If you want to come back to start UI, please click \'Reset\' button'
 
     attr_accessor :date_label
     attr_accessor :input_button
+    attr_accessor :filter_button
     attr_accessor :analysis_button
     attr_accessor :analysis_result_button
     attr_accessor :start_button
@@ -94,7 +98,7 @@ If you want to come back to start UI, please click \'Reset\' button'
 
     def create_root
       root = TkRoot.new do
-        title 'Bug Count Tool'
+        title 'Slacker'
         minsize(650,500)
         maxsize(650,500)
         background MAIN_BACKGROUND
@@ -207,7 +211,8 @@ If you want to come back to start UI, please click \'Reset\' button'
     def check_threads
       if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
           (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-          (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
+          (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?) ||
+          (!$threads["filter thread"].nil? && $threads["filter thread"].alive?))
 
          if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
@@ -215,6 +220,10 @@ If you want to come back to start UI, please click \'Reset\' button'
 
          if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
+         end
+
+         if (!$threads["filter thread"].nil? && $threads["filter thread"].alive?)
+           Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISFILTERING)
          end
 
          if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)
@@ -254,10 +263,24 @@ If you want to come back to start UI, please click \'Reset\' button'
       end
 
       menu_about_click = Proc.new do
-        msg_box = Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'About Bug Count Tool', 'parent' => root, 'message' => INFO)
+        msg_box = Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'About Slacker', 'parent' => root, 'message' => INFO)
       end
 
       menu_exit_click = Proc.new{exit}
+
+      menu_filter_click = Proc.new do
+        @filter_button.place('relx' => 0.025,'rely' => BUTTON_RELY)
+
+        @input_button.place('relx' => 1,'rely' => 1)
+        @reset_button.place('relx' => 1,'rely' => 1)
+        @analysis_button.place('relx' => 1,'rely' => 1)
+        @analysis_result_button.place('relx' => 1,'rely' => 1)
+        @start_button.place('relx' => 1,'rely' => 1)
+        @html_button.place('relx' => 1,'rely' => 1)
+        @output_to_excel_button.place('relx' => 1,'rely' => 1)
+        @autorun_button.place('relx' => 1,'rely' => 1)
+        @config_button.place('relx' => 1,'rely' => 1)
+      end
 
       menu_analysis_click = Proc.new do
         @input_button.place('relx' => 0.025,'rely' => BUTTON_RELY)
@@ -265,6 +288,7 @@ If you want to come back to start UI, please click \'Reset\' button'
         @analysis_button.place('relx' => 0.150,'rely' => BUTTON_RELY)
         @analysis_result_button.place('relx' => 0.500,'rely' => BUTTON_RELY)
 
+        @filter_button.place('relx' => 1,'rely' => 1)
         @start_button.place('relx' => 1,'rely' => 1)
         @html_button.place('relx' => 1,'rely' => 1)
         @output_to_excel_button.place('relx' => 1,'rely' => 1)
@@ -279,6 +303,7 @@ If you want to come back to start UI, please click \'Reset\' button'
         @html_button.place('relx' => 0.500,'rely' => BUTTON_RELY)
         @output_to_excel_button.place('relx' => 0.625,'rely' => BUTTON_RELY)
 
+        @filter_button.place('relx' => 1,'rely' => 1)
         @analysis_button.place('relx' => 1,'rely' => 1)
         @analysis_result_button.place('relx' => 1,'rely' => 1)
         @autorun_button.place('relx' => 1,'rely' => 1)
@@ -291,6 +316,7 @@ If you want to come back to start UI, please click \'Reset\' button'
         @autorun_button.place('relx' => 0.150,'rely' => BUTTON_RELY)
         @config_button.place('relx' => 0.275,'rely' => BUTTON_RELY)
 
+        @filter_button.place('relx' => 1,'rely' => 1)
         @analysis_button.place('relx' => 1,'rely' => 1)
         @analysis_result_button.place('relx' => 1,'rely' => 1)
         @start_button.place('relx' => 1,'rely' => 1)
@@ -300,6 +326,7 @@ If you want to come back to start UI, please click \'Reset\' button'
 
       menu_help.add('command', 'label' => "Help", 'command' => menu_help_click, 'underline' => 0)
       menu_help.add('command', 'label' => "About", 'command' => menu_about_click, 'underline' => 0)
+      menu_file.add('command', 'label' => "Filter Trunk Labruns", 'command' => menu_filter_click, 'underline' => 0)
       menu_file.add('command', 'label' => "Analysis Labruns", 'command' => menu_analysis_click, 'underline' => 0)
       menu_file.add('command', 'label' => "Count Bug", 'command' => menu_count_click, 'underline' => 0)
       menu_file.add('command', 'label' => "Monitor Labruns", 'command' => menu_monitor_click, 'underline' => 0)
@@ -326,7 +353,7 @@ If you want to come back to start UI, please click \'Reset\' button'
       end
 
       @welcome_label = TkLabel.new(root) do
-        text  'Thank You For Using Bug Count Tool'
+        text  'Thank You For Using Slacker'
         height 2
         background MAIN_BACKGROUND
         foreground TEXT_CORLOR
@@ -347,6 +374,16 @@ If you want to come back to start UI, please click \'Reset\' button'
 
       @input_button = TkButton.new(root) do
         text  'Input'
+        height 1
+        width 10
+        background BUTTON_BACKGROUND
+        foreground TEXT_CORLOR
+        font BUTTON_FONT
+        place('relx' => 1,'rely' => 1)
+      end
+
+      @filter_button = TkButton.new(root) do
+        text  'Filter'
         height 1
         width 10
         background BUTTON_BACKGROUND
@@ -471,6 +508,57 @@ If you want to come back to start UI, please click \'Reset\' button'
           input_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)
           # move clock to invisible place
           @clock_canvas.place('relx' => 1,'rely' => 1)
+        end
+      end
+
+      @filter_button.comman = Proc.new do
+        if (check_threads == 'one thread is running')
+          return 0
+        else
+          $threads["filter thread"] = Thread.new() do
+            Thread.current[:name] = "filter thread"
+              # Move picture canvas out of visible area
+              @picture_canvas.place('relx' => 1,'rely' => 1)
+              output_text.configure('state' => 'normal', 'background' => INOUT_BACKGROUND)
+              output_text.delete('1.0', 'end')
+              output_text.clear
+              output_text.insert('end', "
+
+I'm filtering...
+
+")
+              filter_thread = system('ruby.exe filter_start.rb')
+              if filter_thread
+                output_text.clear
+                $stdout.puts "filtering is completed, all work well."
+                output_text.insert('end', "
+
+Filtering is completed, all work well.
+
+")
+              else
+                output_text.clear
+                $stderr.puts "An error occurred when filtering trunk labruns."
+                output_text.insert('end', "
+
+Sorry, an error occurred when filtering trunk labruns.
+
+Please try again")
+                Tk.messageBox('type' => "ok", 'icon' => "error", 'title' => 'Info', 'parent' => root, 'message' => 'An error occurred when filtering trunk labruns')
+              end
+
+            # Count finish and write result to UI
+              output_text.clear
+            output_text.insert('end', "
+Filtering is completed, all work well.
+")
+              data = IO.readlines("#{FILTER_RESULT}")
+              output_text.insert('end',data.join(""))
+
+              # configure the state of output text area
+              output_text.configure('state' => 'disabled')
+              Thread.kill(Thread.current)
+            end
         end
       end
 
@@ -656,7 +744,8 @@ Please try again.
       @reset_button.comman = Proc.new do
         if ((!$threads["count thread"].nil? && $threads["count thread"].alive?) ||
             (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?) ||
-            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?))
+            (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?) ||
+            (!$threads["filter thread"].nil? && $threads["filter thread"].alive?))
 
           if (!$threads["count thread"].nil? && $threads["count thread"].alive?)
             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISCOUNTING)
@@ -664,6 +753,10 @@ Please try again.
 
           if (!$threads["anlysis thread"].nil? && $threads["anlysis thread"].alive?)
             Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISANLYSISING)
+          end
+
+          if (!$threads["filter thread"].nil? && $threads["filter thread"].alive?)
+            Tk.messageBox('type' => "ok", 'icon' => "info", 'title' => 'Info', 'parent' => root, 'message' => ISFILTERING)
           end
 
           if (!$threads["autorun thread"].nil? && $threads["autorun thread"].alive?)

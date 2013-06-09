@@ -64,7 +64,7 @@ module Count
       loop do
         if browser.span(:id => /tfx_TfxContent_AssignmentDetailsGridView_ctl(\d+)_ErrorControl_ErrorDetailLabel/, :index => i).exist?
           full_description = browser.span(:id => /tfx_TfxContent_AssignmentDetailsGridView_ctl(\d+)_ErrorControl_ErrorDetailLabel/, :index => i).text
-          full_description =~ /MAIN-(\d+)|QM-(\d+)|(INC(\d+))/i
+          full_description =~ /MAIN-(\d+)|QM-(\d+)|(INC(\d+))|ETOESUPPORT-(\d+)/i
 
           if "" == full_description
             return "Unfinished"

@@ -8,6 +8,7 @@ module Filter
     attr_accessor :result
     attr_accessor :tier0
     attr_accessor :ship_stopper
+    attr_accessor :ship_stopper_
     attr_accessor :labruns
     attr_accessor :date
     attr_accessor :stop
@@ -21,6 +22,7 @@ module Filter
       @result         = Hash.new
       @tier0          = Hash.new
       @ship_stopper   = Hash.new
+      @ship_stopper_  = Hash.new
       @stop           = false
       @date           = ''
     end
@@ -84,29 +86,32 @@ module Filter
         if !v.include?('tier1')
           if SHIP_STOPPER.include?(v) && !@ship_stopper.has_key?(v)
             @ship_stopper[v] = k
+            @ship_stopper_[v] = k
           elsif COMMON.include?(v) && !common.has_key?(v)
             common[k] = v
           elsif !@tier0.has_key?(v)
             @tier0[v] = k
           end
         end
-      end
+      end      
+      
       c = sort_hash_by_value(common)
       c.each_pair do |k, v|
         if v.size == 2
           if !@tier0.has_key?(k)
             @tier0[k] = v[0]
+            @ship_stopper_[k] = v[0] 
           end
 
           if !@ship_stopper.has_key?(k)
-            @ship_stopper[k] = v[1]
+            @ship_stopper[k] = v[1]                       
           end
         else
           if !@tier0.has_key?(k)
             @tier0[k] = v[0]
           end
         end
-      end
+      end      
     end
 
     def sort_hash_by_value hash_table
@@ -124,7 +129,7 @@ module Filter
     def get_labruns_str
       process_result
       prefix = 'http://lrm/default.aspx?_labrunId='
-      tier0_url, ship_stopper_url = prefix, prefix
+      tier0_url, ship_stopper_url, ship_stopper_url_ = prefix, prefix, prefix
 
       @tier0.each_value do |v|
         tier0_url +=  v + ','
@@ -133,13 +138,22 @@ module Filter
 
       @ship_stopper.each_value do |v|
         ship_stopper_url +=  v + ','
-      end
+      end 
       ship_stopper_url.chop!
+      
+      @ship_stopper_.each_value do |v|
+        ship_stopper_url_ +=  v + ','
+      end
+      ship_stopper_url_.chop!
+      
       str ="
 Tier0 total #{@tier0.size}:
 #{tier0_url}
 
-ShipStopper total #{@ship_stopper.size}:
+ShipStopper(two labruns are same as trunk) total: #{@ship_stopper_.size}:
+#{ship_stopper_url_}
+
+ShipStopper(two labruns are different from trunk) total: #{@ship_stopper.size}:
 #{ship_stopper_url}
 "
       return str

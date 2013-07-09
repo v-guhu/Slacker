@@ -18,7 +18,7 @@ module Excel
       @browser = e.browser
     end
 
-    def jira_login user = 'v-guhu', pwd = 'Ep@198512256'
+    def jira_login user = 'v-guhu', pwd = 'Ep@198512257'
       browser.goto 'https://jira/jira/login.jsp?'
       browser.text_field(:id => 'login-form-username').set user
       browser.text_field(:id => 'login-form-password').set pwd

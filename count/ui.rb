@@ -105,7 +105,7 @@ If you want to come back to start UI, please click \'Reset\' button'
         geometry('650x500')
         resizable(0,0)
         if Dir.pwd.to_s.encoding.to_s != 'GBK'
-           iconbitmap "#{Dir.pwd}/images/crw.ico"
+           iconbitmap "#{Dir.pwd}/images/dragon.ico"
         end
       end
       return root

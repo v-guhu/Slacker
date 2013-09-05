@@ -8,6 +8,7 @@ GEM
     ffi (1.0.11)
     hoe (3.0.6)
       rake (~> 0.8)
+    httpclient (2.3.4.1)
     mini_magick (3.2.1)
       subexec (~> 0.0.4)
     multi_json (1.7.2)
@@ -27,6 +28,9 @@ GEM
       builder (>= 2.1.2)
       s4t-utils (>= 1.0.3)
       xml-simple (>= 1.0.11)
+    watir (4.0.2)
+      commonwatir (~> 4)
+      watir-webdriver
     watir (4.0.2-x86-mingw32)
       commonwatir (~> 4)
       watir-classic (~> 3.2)
@@ -61,5 +65,6 @@ PLATFORMS
   x86-mingw32
 
 DEPENDENCIES
+  httpclient
   watir
   watir-webdriver
